@@ -1,0 +1,54 @@
+# Node modules dla Vue.js (frontend)
+node_modules/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Logi
+logs
+*.log
+*.tlog
+*.vscode/
+
+# System plików operacyjnych
+.DS_Store
+Thumbs.db
+
+# Wirtualne środowisko Python dla FastAPI (backend)
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Środowisko produkcyjne
+.env
+.env.local
+.env.production
+.env.production.local
+
+# Konfiguracja IDE
+.idea/
+.vscode/
+*.sublime-workspace
+
+# Pliki tymczasowe
+*.temp
+*.swp
+*~
+
+# Kompilowane pliki i foldery
+*.out
+*.exe
+*.dll
+*.so
+
+# Konfiguracja testów
+coverage/
+junitxml/
+
+# Pliki CI/CD
+/.github/secrets
+/.github/workflows/secrets
+.azure-pipelines/

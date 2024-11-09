@@ -1,11 +1,9 @@
-# main.py
-
-from fastapi import FastAPI
+from fastapi import FastAPI, Form, Request
+from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 from typing import List
 import pandas as pd
 import plotly.express as px
-from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 # Inicjalizacja aplikacji FastAPI
@@ -31,42 +29,53 @@ class SimulationRequest(BaseModel):
     transactions: List[Transaction]
     target_amount: float
 
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to my FastAPI application!"}
+# Strona główna z formularzem HTML
+@app.get("/", response_class=HTMLResponse)
+async def read_root():
+    html_content = """
+    <!DOCTYPE html>
+    <html>
+        <head>
+            <title>Symulacja transakcji</title>
+        </head>
+        <body>
+            <h1>Wprowadź dane transakcji do symulacji</h1>
+            <form action="/simulate" method="post">
+                <label>Numer transakcji: <input type="number" name="transaction_number" required></label><br>
+                <label>Saldo początkowe (PLN): <input type="number" step="0.01" name="starting_balance" required></label><br>
+                <label>Zainwestowany kapitał (PLN): <input type="number" step="0.01" name="invested_capital" required></label><br>
+                <label>Zysk (PLN): <input type="number" step="0.01" name="profit" required></label><br>
+                <label>Kwota docelowa (PLN): <input type="number" step="0.01" name="target_amount" required></label><br>
+                <button type="submit">Symuluj</button>
+            </form>
+        </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
 
 # Endpoint do symulacji
 @app.post("/simulate")
-def simulate(simulation_request: SimulationRequest):
+async def simulate(
+    transaction_number: int = Form(...),
+    starting_balance: float = Form(...),
+    invested_capital: float = Form(...),
+    profit: float = Form(...),
+    target_amount: float = Form(...)
+):
     # Konwersja danych transakcji do słownika
-    transactions = {}
-    for t in simulation_request.transactions:
-        transactions[t.transaction_number] = (t.starting_balance, t.invested_capital, t.profit)
-
-    target_amount = simulation_request.target_amount
+    transactions = {transaction_number: (starting_balance, invested_capital, profit)}
 
     # Przetwarzanie transakcji
     existing_transactions_df, average_return, average_reinvestment_percent, account_balance = process_transactions(transactions)
-
-    existing_transactions_count = len(existing_transactions_df)
-    initial_balance_after_transactions = account_balance
-
-    # Symulacja przyszłych transakcji
     simulation_df = simulate_account_value(
-        initial_balance_after_transactions,
+        account_balance,
         average_return,
         target_amount,
         average_reinvestment_percent,
-        existing_transactions_count
+        existing_transactions_count=len(existing_transactions_df)
     )
-
-    # Łączenie danych
     full_df = pd.concat([existing_transactions_df, simulation_df], ignore_index=True)
-
-    # Tworzenie wykresu
     fig = plot_graph(full_df, target_amount)
-
-    # Konwersja wykresu do JSON
     graph_json = fig.to_json()
 
     # Przygotowanie danych do odpowiedzi

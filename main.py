@@ -31,6 +31,10 @@ class SimulationRequest(BaseModel):
     transactions: List[Transaction]
     target_amount: float
 
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to my FastAPI application!"}
+
 # Endpoint do symulacji
 @app.post("/simulate")
 def simulate(simulation_request: SimulationRequest):
